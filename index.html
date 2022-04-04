@@ -1,0 +1,145 @@
+import processing.serial.*;
+
+Serial myPort;  // Create object from Serial class
+int val;      // Data received from the serial port
+
+
+int[] stringX = {200,400,600,800};
+
+boolean[] buttons = {false,false,false,false};
+int buttonsY;
+
+int numDots = 20;
+PVector[] dots = new PVector[numDots];
+
+float speed = 2;
+int score = 0;
+
+void setup(){
+  
+  size(1000,600);
+  background(0);
+  strokeWeight(3);
+  rectMode(CENTER);
+  
+  String portName = Serial.list()[0];
+  println(portName);
+  myPort = new Serial(this, portName, 9600);
+  
+  buttonsY = height*4/5;
+  
+ for(int i =0; i < numDots; i++){  // numDots = dots.length
+ int randIndex = floor(random(stringX.length)); //floor turn float into integer
+ dots[i] = new PVector(stringX[randIndex],floor(random(1,500))*-100); // dots' position
+ }
+}
+
+void draw(){
+  
+  if ( myPort.available() > 0) {  // If data is available,
+    val = myPort.read();         // read it and store it in val
+  }
+  background(0);
+  println(score);
+  
+  textSize(35);
+  text("Score : " + score, 20, 40);
+  
+  if (val == 1){
+   buttons[0] = true;
+ }
+  if (val == 2){
+   buttons[0] = false;
+ }
+ 
+ if (val == 3){
+   buttons[1] = true;
+ }
+  if (val == 4){
+   buttons[1] = false;
+ }
+ 
+ if (val == 5){
+   buttons[2] = true;
+ }
+  if (val == 6){
+   buttons[2] = false;
+ }
+ 
+ if (val == 7){
+   buttons[3] = true;
+ }
+  if (val == 8){
+   buttons[3] = false;
+ }
+ 
+  stroke(255);
+  for(int i = 0; i < stringX.length; i++){
+    line(stringX[i],0,stringX[i],height);
+  }
+  
+  
+  //fill(#E4EA2D);
+  for(int i = 0; i < dots.length; i++){
+   
+    if(dots[i].x == 200){
+      fill(#E4EA2D);
+    }
+  
+    if(dots[i].x == 400){
+      fill(#DE2B2B);
+    }
+    
+    if(dots[i].x == 600){
+      fill(#1EC961);
+    }
+  
+    if(dots[i].x == 800){
+      fill(#364FD6);
+    }
+    
+   ellipse(dots[i].x, dots[i].y, 30, 30);
+   dots[i].y += speed;
+   
+   
+  
+   
+   if(dots[i].y > height + 15){
+     resetDot(i); 
+     score -= 50;
+   }
+   
+    
+  }
+  
+  
+  
+  
+  for(int i = 0; i < buttons.length; i++){
+   if(buttons[i]){
+     fill(0);
+   }
+     else{
+       fill(255);
+     }
+       ellipse(stringX[i],buttonsY,60,60);
+  }
+  
+  for(int i = 0 ; i < dots.length; i++){
+    for(int j = 0 ; j < buttons.length ; j++){
+      if (buttons[j] && stringX[j] == dots[i].x && dots[i].y > buttonsY - 30 && dots[i].y < buttonsY + 30 ){
+        //dot is hit
+        resetDot(i);
+        score += 100;
+        //textSize(35);
+        //text("Perfect" ,stringX[i] ,buttonsY);
+      }
+    }
+  }
+  
+}
+
+void resetDot(int index) {
+  dots[index].x = stringX[floor(random(4))]; 
+  dots[index].y -= 640;
+}
